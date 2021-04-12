@@ -33,7 +33,7 @@ Shader "Mochizuki/Sakura Shader/Lyrics"
 
         [MaterialToggle]
         _SlideMode_Enabled ("Enable Slide Mode",               Int) = 0
-        [Enum(Left, 0, Center, 1, Right, 2)]
+        [Enum(Left, 0, Center, 1, Right, 2, Top, 3, Bottom, 4)]
         _SlideFrom         ("Slide From",                      Int) = 0
         _SlideWidth        ("Slide Width",         Range(0.0, 1.0)) = 0.0
 

@@ -82,13 +82,21 @@ float4 fs(const v2f i) : SV_TARGET
         {
             clip(lerp(-1, 1, step(i.localPos.x + 0.5 - _SlideWidth, 0)));
         }
-        if (_SlideFrom == 1)
+        else if (_SlideFrom == 1)
         {
             clip(lerp(-1, 1, step(abs(i.localPos.x) - _SlideWidth * 0.5, 0)));
         }
-        if (_SlideFrom == 2)
+        else if (_SlideFrom == 2)
         {
             clip(i.localPos.x - 0.5 + _SlideWidth);
+        }
+        else if (_SlideFrom == 3)
+        {
+            clip(i.localPos.y - 0.5 + _SlideWidth);
+        }
+        else if (_SlideFrom == 4)
+        {
+            clip(lerp(-1, 1, step(i.localPos.y + 0.5 - _SlideWidth, 0)));
         }
     }
 

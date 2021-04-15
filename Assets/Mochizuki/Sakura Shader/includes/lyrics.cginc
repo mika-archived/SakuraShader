@@ -7,6 +7,10 @@
 
 float4 _Color;
 
+int       _Anim_Enabled;
+sampler2D _Anim_2ndTex;
+float     _Anim_UpdateRate;
+
 int       _SlideMode_Enabled;
 int       _SlideFrom;
 float     _SlideWidth;
@@ -68,12 +72,23 @@ v2f vs(const appdata_full v)
 
 #endif // SHADER_CUSTOM_VERTEX
 
+float4 SampleTexture(float2 uv)
+{
+    if (_Anim_Enabled)
+    {
+        int a = floor(_Time.y / _Anim_UpdateRate) % 2 == 0;
+        return _Color * (a == 0 ? tex2D(_MainTex, uv) : tex2D(_Anim_2ndTex, uv));
+    }
+
+    return _Color * tex2D(_MainTex, uv);
+}
+
 float4 fs(const v2f i) : SV_TARGET
 {
 #if defined(SHADER_OUTLINE)
     float4 color = _Outline_Color * tex2D(_Outline_Tex, i.texCoord);
 #else
-    float4 color = _Color * tex2D(_MainTex, i.texCoord);
+    float4 color = SampleTexture(i.texCoord);
 #endif // SHADER_OUTLINE
 
     if (_SlideMode_Enabled)

@@ -10,6 +10,16 @@ Shader "Mochizuki/Sakura Shader/Lyrics"
         _MainTex           ("Texture",                          2D) = "white" {}
         _Color             ("Main Color",                    Color) = (0, 0, 0, 1)
 
+        // #region Animation
+
+        [MaterialToggle]
+        _Anim_Enabled      ("Enable Texture Animation",        Int) = 0
+        [NoScaleOffset]
+        _Anim_2ndTex       ("Texture Animation 2nd Texture",    2D) = "while" {}
+        _Anim_UpdateRate   ("Texture Animation Update Rate", Float) = 0.0
+
+        // #endregion
+
         // #region Outline
 
         [MaterialToggle]

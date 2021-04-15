@@ -41,6 +41,8 @@ Shader "Mochizuki/Sakura Shader/Lyrics"
 
         [Enum(UnityEngine.Rendering.CullMode)]
         _Culling           ("Culling",                         Int) = 2
+        [Enum(Off, 0, On, 1)]
+        _ZWrite            ("ZWrite",                          Int) = 1
     }
 
     SubShader
@@ -108,7 +110,7 @@ Shader "Mochizuki/Sakura Shader/Lyrics"
 
             Blend  SrcAlpha OneMinusSrcAlpha
             Cull   [_Culling]
-            ZWrite On
+            ZWrite [_ZWrite]
 
             CGPROGRAM
 

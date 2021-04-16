@@ -1,7 +1,7 @@
-/*-------------------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------------------------------------------------
  * Copyright (c) Natsuneko. All rights reserved.
- * Licensed under the MIT License. See LICENSE in the project root for license information.
- *------------------------------------------------------------------------------------------*/
+ * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
+ *-----------------------------------------------------------------------------------------------------------------------*/
 
 Shader "Mochizuki/Sakura Shader/Skybox"
 {
@@ -134,4 +134,6 @@ Shader "Mochizuki/Sakura Shader/Skybox"
             ENDCG
         }
     }
+
+    CustomEditor "Mochizuki.SakuraShader.SkyboxGui"
 }

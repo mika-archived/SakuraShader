@@ -1,29 +1,36 @@
-/*-------------------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------------------------------------------------
  * Copyright (c) Natsuneko. All rights reserved.
- * Licensed under the MIT License. See LICENSE in the project root for license information.
- *------------------------------------------------------------------------------------------*/
+ * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
+ *-----------------------------------------------------------------------------------------------------------------------*/
 
 // #include "core.cginc"
 
 float4 _Color;
 
-int       _Anim_Enabled;
-sampler2D _Anim_2ndTex;
-float     _Anim_UpdateRate;
+int       _AnimEnabled;
+sampler2D _AnimSpriteTex;
+float     _AnimUpdateRate;
 
-int       _SlideMode_Enabled;
+int       _SlideModeEnabled;
 int       _SlideFrom;
 float     _SlideWidth;
 
-int       _Outline_Enabled;
-float4    _Outline_Color;
-float     _Outline_Width;
-sampler2D _Outline_Tex;
+int       _OutlineEnabled;
+float4    _OutlineColor;
+float     _OutlineWidth;
+sampler2D _OutlineTex;
 
-int       _Rotation_Enabled;
-float     _Rotation_Angle;
+int       _RotationEnabled;
+float     _RotationAngle;
 
 #if defined(SHADER_CUSTOM_VERTEX)
+
+struct v2f
+{
+    float4 vertex   : SV_POSITION;
+    float2 texCoord : TEXCOORD0;
+    float3 localPos : TEXCOORD1;
+};
 
 inline float4 RotateYByDegree(const float4 vertex, const float degree)
 {
@@ -42,9 +49,9 @@ v2f vs(const appdata_full v)
     const float3 normal = normalize(mul((float3x3) UNITY_MATRIX_IT_MV, v.vertex.xyz));
     const float2 offset = TransformViewToProjection(normal.xy);
 
-    if (_Rotation_Enabled)
+    if (_RotationEnabled)
     {
-        o.vertex = RotateYByDegree(v.vertex, _Rotation_Angle);
+        o.vertex = RotateYByDegree(v.vertex, _RotationAngle);
         o.vertex = UnityObjectToClipPos(o.vertex);
     }
     else
@@ -53,12 +60,12 @@ v2f vs(const appdata_full v)
     }
 
 #if defined(SHADER_OUTLINE)
-    if (_Outline_Enabled)
+    if (_OutlineEnabled)
     {
 #if defined(SHADER_OUTLINE_REVERSE)
-        o.vertex.xy -= offset * _Outline_Width;
+        o.vertex.xy -= offset * _OutlineWidth;
 #else
-        o.vertex.xy += offset * _Outline_Width;
+        o.vertex.xy += offset * _OutlineWidth;
 #endif // SHADER_OUTLINE_REVERSE
     }
 #endif // SHADER_OUTLINE
@@ -74,10 +81,10 @@ v2f vs(const appdata_full v)
 
 float4 SampleTexture(float2 uv)
 {
-    if (_Anim_Enabled)
+    if (_AnimEnabled)
     {
-        int a = floor(_Time.y / _Anim_UpdateRate) % 2 == 0;
-        return _Color * (a == 0 ? tex2D(_MainTex, uv) : tex2D(_Anim_2ndTex, uv));
+        int a = floor(_Time.y / _AnimUpdateRate) % 2 == 0;
+        return _Color * (a == 0 ? tex2D(_MainTex, uv) : tex2D(_AnimSpriteTex, uv));
     }
 
     return _Color * tex2D(_MainTex, uv);
@@ -86,12 +93,12 @@ float4 SampleTexture(float2 uv)
 float4 fs(const v2f i) : SV_TARGET
 {
 #if defined(SHADER_OUTLINE)
-    float4 color = _Outline_Color * tex2D(_Outline_Tex, i.texCoord);
+    float4 color = _OutlineColor * tex2D(_OutlineTex, i.texCoord);
 #else
     float4 color = SampleTexture(i.texCoord);
 #endif // SHADER_OUTLINE
 
-    if (_SlideMode_Enabled)
+    if (_SlideModeEnabled)
     {
         if (_SlideFrom == 0)
         {

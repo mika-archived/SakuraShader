@@ -1,7 +1,7 @@
-/*-------------------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------------------------------------------------
  * Copyright (c) Natsuneko. All rights reserved.
- * Licensed under the MIT License. See LICENSE in the project root for license information.
- *------------------------------------------------------------------------------------------*/
+ * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
+ *-----------------------------------------------------------------------------------------------------------------------*/
 
 #include "UnityCG.cginc"
 #include "AutoLight.cginc"
@@ -22,6 +22,10 @@ struct appdata
 
 #endif // SHADER_SINGLE_PASS_RENDERING
 
+#if defined(SHADER_CUSTOM_VERTEX)
+
+#else
+
 struct v2f
 {
     float4 vertex   : SV_POSITION;
@@ -32,10 +36,6 @@ struct v2f
     UNITY_VERTEX_OUTPUT_STEREO
 #endif // SHADER_SINGLE_PASS_RENDERING
 };
-
-#if defined(SHADER_CUSTOM_VERTEX)
-
-#else
 
 #if defined(SHADER_SINGLE_PASS_RENDERING)
 v2f vs(const appdata v)
@@ -68,6 +68,10 @@ v2f vs(const appdata_full v)
 #elif defined(SHADER_LYRICS)
 
 #include "lyrics.cginc"
+
+#elif defined(SHADER_PARTICLES)
+
+#include "particles.cginc"
 
 #elif defined(SHADER_UNLIT)
 

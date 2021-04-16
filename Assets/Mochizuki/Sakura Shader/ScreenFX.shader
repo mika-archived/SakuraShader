@@ -1,7 +1,7 @@
-/*-------------------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------------------------------------------------
  * Copyright (c) Natsuneko. All rights reserved.
- * Licensed under the MIT License. See LICENSE in the project root for license information.
- *------------------------------------------------------------------------------------------*/
+ * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
+ *-----------------------------------------------------------------------------------------------------------------------*/
 
 Shader "Mochizuki/Sakura Shader/ScreenFX"
 {
@@ -12,27 +12,27 @@ Shader "Mochizuki/Sakura Shader/ScreenFX"
         // #region Brightness
 
         [MaterialToggle]
-        _Brightness_Enabled  ("Enable Brightness",                Int) = 0
-        _Brightness_Strength ("Brightness Strength", Range(-1.0, 1.0)) = 0.0
+        _BrightnessEnabled  ("Enable Brightness",                Int) = 0
+        _BrightnessStrength ("Brightness Strength", Range(-1.0, 1.0)) = 0.0
 
         // #endregion
 
         // #region Cinemascope
 
         [MaterialToggle]
-        _Cinemascope_Enabled ("Enable Cinemascope",            Int) = 0
-        _Cinemascope_Color   ("Cinemascope Color",           Color) = (0, 0, 0, 1)
-        _Cinemascope_Width   ("Cinemascope Width", Range(0.0, 1.0)) = 0.0
+        _CinemascopeEnabled ("Enable Cinemascope",            Int) = 0
+        _CinemascopeColor   ("Cinemascope Color",           Color) = (0, 0, 0, 1)
+        _CinemascopeWidth   ("Cinemascope Width", Range(0.0, 1.0)) = 0.0
 
         // #endregion
 
         // #region Color Overlay
 
         [MaterialToggle]
-        _ColorOverlay_Enabled ("Enable Color Overlay",            Int) = 0
-        _ColorOverlay_R       ("Color Overlay Red",   Range(0.0, 1.0)) = 0.0
-        _ColorOverlay_G       ("Color Overlay Green", Range(0.0, 1.0)) = 0.0
-        _ColorOverlay_B       ("Color Overlay Blue",  Range(0.0, 1.0)) = 0.0
+        _ColorOverlayEnabled ("Enable Color Overlay",            Int) = 0
+        _ColorOverlayR       ("Color Overlay Red",   Range(0.0, 1.0)) = 0.0
+        _ColorOverlayG       ("Color Overlay Green", Range(0.0, 1.0)) = 0.0
+        _ColorOverlayB       ("Color Overlay Blue",  Range(0.0, 1.0)) = 0.0
 
         // #endregion
     }
@@ -72,4 +72,6 @@ Shader "Mochizuki/Sakura Shader/ScreenFX"
             ENDCG
         }
     }
+
+    CustomEditor "Mochizuki.SakuraShader.ScreenFxGui"
 }

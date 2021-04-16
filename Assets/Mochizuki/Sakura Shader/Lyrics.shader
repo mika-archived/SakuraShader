@@ -1,7 +1,7 @@
-/*-------------------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------------------------------------------------
  * Copyright (c) Natsuneko. All rights reserved.
- * Licensed under the MIT License. See LICENSE in the project root for license information.
- *------------------------------------------------------------------------------------------*/
+ * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
+ *-----------------------------------------------------------------------------------------------------------------------*/
 
 Shader "Mochizuki/Sakura Shader/Lyrics"
 {
@@ -13,36 +13,37 @@ Shader "Mochizuki/Sakura Shader/Lyrics"
         // #region Animation
 
         [MaterialToggle]
-        _Anim_Enabled      ("Enable Texture Animation",        Int) = 0
+        _AnimEnabled      ("Enable Texture Animation",        Int) = 0
         [NoScaleOffset]
-        _Anim_2ndTex       ("Texture Animation 2nd Texture",    2D) = "while" {}
-        _Anim_UpdateRate   ("Texture Animation Update Rate", Float) = 0.0
+        _AnimSpriteTex    ("Shader ANimation Sprite Texture",  2D) = "while" {}
+        _AnimSpriteSplit  ("Shader Animation Sprite Split",   Int) = 1
+        _AnimUpdateRate   ("Texture Animation Update Rate", Float) = 0.0
 
         // #endregion
 
         // #region Outline
 
         [MaterialToggle]
-        _Outline_Enabled   ("Enable Outline",                  Int) = 0
-        _Outline_Color     ("Outline Color",                 Color) = (0, 0, 0, 1)
-        _Outline_Width     ("Outline Width",      Range(0.0, 20.0)) = 0
+        _OutlineEnabled   ("Enable Outline",                  Int) = 0
+        _OutlineColor     ("Outline Color",                 Color) = (0, 0, 0, 1)
+        _OutlineWidth     ("Outline Width",      Range(0.0, 20.0)) = 0
         [NoScaleOffset]
-        _Outline_Tex       ("Outline Texture",                  2D) = "white" {}
+        _OutlineTex       ("Outline Texture",                  2D) = "white" {}
 
         // #endregion
 
         // #region RotationZ
 
         [MaterialToggle]
-        _Rotation_Enabled  ("Enable Rotation",                 Int) = 0
-        _Rotation_Angle    ("Rotation Angle", Range(-180.0, 180.0)) = 0
+        _RotationEnabled  ("Enable Rotation",                 Int) = 0
+        _RotationAngle    ("Rotation Angle", Range(-180.0, 180.0)) = 0
 
         // #endregion
 
         // #region SlideMode
 
         [MaterialToggle]
-        _SlideMode_Enabled ("Enable Slide Mode",               Int) = 0
+        _SlideModeEnabled ("Enable Slide Mode",               Int) = 0
         [Enum(Left, 0, Center, 1, Right, 2, Top, 3, Bottom, 4)]
         _SlideFrom         ("Slide From",                      Int) = 0
         _SlideWidth        ("Slide Width",         Range(0.0, 1.0)) = 0.0
@@ -132,4 +133,6 @@ Shader "Mochizuki/Sakura Shader/Lyrics"
             ENDCG
         }
     }
+
+    CustomEditor "Mochizuki.SakuraShader.LyricsGui"
 }

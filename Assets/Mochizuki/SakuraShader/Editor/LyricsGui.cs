@@ -2,16 +2,15 @@
  * Copyright (c) Natsuneko. All rights reserved.
  * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
  *-----------------------------------------------------------------------------------------------------------------------*/
+
 using UnityEditor;
 
 using UnityEngine;
 
 namespace Mochizuki.SakuraShader
 {
-    public class LyricsGui : ShaderGUI
+    public class LyricsGui : SakuraShaderGui
     {
-        private bool _isInitialized;
-
         public override void OnGUI(MaterialEditor me, MaterialProperty[] properties)
         {
             var material = (Material) me.target;
@@ -31,18 +30,14 @@ namespace Mochizuki.SakuraShader
             _SlideModeEnabled = FindProperty(nameof(_SlideModeEnabled), properties);
             _SlideFrom = FindProperty(nameof(_SlideFrom), properties);
             _SlideWidth = FindProperty(nameof(_SlideWidth), properties);
+            _StencilRef = FindProperty(nameof(_StencilRef), properties);
+            _StencilCompare = FindProperty(nameof(_StencilCompare), properties);
+            _StencilPass = FindProperty(nameof(_StencilPass), properties);
 
             _Culling = FindProperty(nameof(_Culling), properties);
             _ZWrite = FindProperty(nameof(_ZWrite), properties);
 
-            using (new EditorGUILayout.VerticalScope())
-            {
-                EditorStyles.label.wordWrap = true;
-
-                using (new ShaderUtility.Section("Lyrics Shader"))
-                    EditorGUILayout.LabelField("Lyrics Shader - Part of Sakura Shader by Natsuneko");
-            }
-
+            OnHeaderGui("Lyrics Shader");
             OnInitialize(material);
 
             OnMainGui(me);
@@ -50,22 +45,13 @@ namespace Mochizuki.SakuraShader
             OnOutlineGui(me);
             OnRotationGui(me);
             OnSlideMode(me);
-            OnOthersGui(me);
-        }
-
-        private void OnInitialize(Material material)
-        {
-            if (_isInitialized)
-                return;
-            _isInitialized = true;
-
-            foreach (var keyword in material.shaderKeywords)
-                material.DisableKeyword(keyword);
+            OnStencilGui(me);
+            OnOthersGui(me, _Culling, _ZWrite);
         }
 
         private void OnMainGui(MaterialEditor me)
         {
-            using (new ShaderUtility.Section("Main"))
+            using (new Section("Main"))
             {
                 me.TexturePropertySingleLine(new GUIContent("Main Texture"), _MainTex);
                 me.TextureScaleOffsetProperty(_MainTex);
@@ -76,7 +62,7 @@ namespace Mochizuki.SakuraShader
 
         private void OnAnimationGui(MaterialEditor me)
         {
-            ShaderUtility.OnToggleGui(me, "Animation", _AnimEnabled, "Enable Shader Animation", () =>
+            OnToggleGui(me, "Animation", _AnimEnabled, "Enable Shader Animation", () =>
             {
                 me.TexturePropertySingleLine(new GUIContent("Animation Sprite Texture"), _AnimSpriteTex);
                 me.ShaderProperty(_AnimSpriteSplit, "Sprite Split Horizontal");
@@ -86,7 +72,7 @@ namespace Mochizuki.SakuraShader
 
         private void OnOutlineGui(MaterialEditor me)
         {
-            ShaderUtility.OnToggleGui(me, "Outline", _OutlineEnabled, "Enable Outline", () =>
+            OnToggleGui(me, "Outline", _OutlineEnabled, "Enable Outline", () =>
             {
                 me.TexturePropertySingleLine(new GUIContent("Outline Texture"), _OutlineTex);
                 me.ShaderProperty(_OutlineColor, "Outline Color");
@@ -96,7 +82,7 @@ namespace Mochizuki.SakuraShader
 
         private void OnRotationGui(MaterialEditor me)
         {
-            ShaderUtility.OnToggleGui(me, "Rotation", _RotationEnabled, "Enable Rotation", () =>
+            OnToggleGui(me, "Rotation", _RotationEnabled, "Enable Rotation", () =>
             {
                 //
                 me.ShaderProperty(_RotationAngle, "Rotation Angle");
@@ -105,27 +91,21 @@ namespace Mochizuki.SakuraShader
 
         private void OnSlideMode(MaterialEditor me)
         {
-            ShaderUtility.OnToggleGui(me, "Slide", _SlideModeEnabled, "Enable Slide Animation", () =>
+            OnToggleGui(me, "Slide", _SlideModeEnabled, "Enable Slide Animation", () =>
             {
                 me.ShaderProperty(_SlideFrom, "Slide Mode");
                 me.ShaderProperty(_SlideWidth, "Slide Width");
             });
         }
 
-        private void OnOthersGui(MaterialEditor me)
+        private void OnStencilGui(MaterialEditor me)
         {
-            using (new ShaderUtility.Section("Others"))
+            using (new Section("Stencil"))
             {
-                me.ShaderProperty(_Culling, "Culling");
-                me.ShaderProperty(_ZWrite, "ZWrite");
-                me.RenderQueueField();
-                me.DoubleSidedGIField();
+                me.ShaderProperty(_StencilRef, "Reference");
+                me.ShaderProperty(_StencilCompare, "Compare Function");
+                me.ShaderProperty(_StencilPass, "Pass");
             }
-        }
-
-        private new static MaterialProperty FindProperty(string name, MaterialProperty[] properties)
-        {
-            return FindProperty(name, properties, false);
         }
 
         // ReSharper disable InconsistentNaming
@@ -145,6 +125,9 @@ namespace Mochizuki.SakuraShader
         private MaterialProperty _SlideModeEnabled;
         private MaterialProperty _SlideFrom;
         private MaterialProperty _SlideWidth;
+        private MaterialProperty _StencilRef;
+        private MaterialProperty _StencilCompare;
+        private MaterialProperty _StencilPass;
 
         private MaterialProperty _Culling;
         private MaterialProperty _ZWrite;

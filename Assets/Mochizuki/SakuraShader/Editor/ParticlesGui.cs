@@ -4,10 +4,8 @@ using UnityEngine;
 
 namespace Mochizuki.SakuraShader
 {
-    public class ParticlesGui : ShaderGUI
+    public class ParticlesGui : SakuraShaderGui
     {
-        private bool _isInitialized;
-
         public override void OnGUI(MaterialEditor me, MaterialProperty[] properties)
         {
             var material = (Material) me.target;
@@ -22,34 +20,17 @@ namespace Mochizuki.SakuraShader
             _Culling = FindProperty(nameof(_Culling), properties, false);
             _ZWrite = FindProperty(nameof(_ZWrite), properties, false);
 
-            using (new EditorGUILayout.VerticalScope())
-            {
-                EditorStyles.label.wordWrap = true;
-
-                using (new ShaderUtility.Section("Particles Shader"))
-                    EditorGUILayout.LabelField("Particles Shader - Part of Sakura Shader by Natsuneko");
-            }
-
+            OnHeaderGui("Particles Shader");
             OnInitialize(material);
 
             OnMainGui(me);
             OnArrayGui(me);
-            OnOthersGui(me);
-        }
-
-        private void OnInitialize(Material material)
-        {
-            if (_isInitialized)
-                return;
-            _isInitialized = true;
-
-            foreach (var keyword in material.shaderKeywords)
-                material.DisableKeyword(keyword);
+            OnOthersGui(me, _Culling, _ZWrite);
         }
 
         private void OnMainGui(MaterialEditor me)
         {
-            using (new ShaderUtility.Section("Main"))
+            using (new Section("Main"))
             {
                 me.TexturePropertySingleLine(new GUIContent("Main Texture"), _MainTex);
                 me.TextureScaleOffsetProperty(_MainTex);
@@ -60,7 +41,7 @@ namespace Mochizuki.SakuraShader
 
         private void OnArrayGui(MaterialEditor me)
         {
-            ShaderUtility.OnToggleGui(me, "Texture Array (Sprite)", _ArrayEnabled, "Enable Texture Array", () =>
+            OnToggleGui(me, "Texture Array (Sprite)", _ArrayEnabled, "Enable Texture Array", () =>
             {
                 me.TexturePropertySingleLine(new GUIContent("Texture Array"), _ArrayTexture);
 
@@ -70,17 +51,6 @@ namespace Mochizuki.SakuraShader
                 EditorGUILayout.Space();
                 EditorGUILayout.HelpBox("Texture Array replaces Main Texture", MessageType.Info);
             });
-        }
-
-        private void OnOthersGui(MaterialEditor me)
-        {
-            using (new ShaderUtility.Section("Others"))
-            {
-                me.ShaderProperty(_Culling, "Culling");
-                me.ShaderProperty(_ZWrite, "ZWrite");
-                me.RenderQueueField();
-                me.DoubleSidedGIField();
-            }
         }
 
         // ReSharper disable InconsistentNaming

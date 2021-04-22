@@ -3,12 +3,9 @@
  * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
  *-----------------------------------------------------------------------------------------------------------------------*/
 
-namespace Mochizuki.SakuraShader
-{
-    public enum IndexSource
-    {
-        TexCoordZ,
+// #include "core.cginc"
 
-        TexCoordW
-    }
+float4 fs(const v2f i) : SV_TARGET
+{
+    return float4(0, 0, 0, 0);
 }

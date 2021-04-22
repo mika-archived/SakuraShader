@@ -3,26 +3,11 @@
  * Licensed under the Proprietary License. See https://docs.mochizuki.moe/unity/sakura-shader/terms for more information.
  *-----------------------------------------------------------------------------------------------------------------------*/
 
-Shader "Mochizuki/Sakura Shader/Particles"
+Shader "Mochizuki/Sakura Shader/StencilWrite"
 {
     Properties
     {
-        _MainTex           ("Texture",                          2D) = "white" {}
-        _Color             ("Base Color",                    Color) = (0, 0, 0, 1)
-
-        // #region Texture Array
-
-        [SSToggleWithoutKeyword]
-        _ArrayEnabled      ("Enabled Texture Array",           Int) = 0
-        [NoScaleOffset]
-        _ArrayTexture      ("Array Texture",               2DArray) = "white" {}
-        [Enum(Mochizuki.SakuraShader.IndexSource)]
-        _ArrayIndexSource  ("Array Index Source",              Int) = 0
-        _ArraySize         ("Array Size of Texture",           Int) = 0
-
-        // #endregion
-
-        // #region Stencil
+        // #region
 
         _StencilRef        ("Stencil Reference",               Int) = 1
         [Enum(UnityEngine.Rendering.CompareFunction)]
@@ -56,13 +41,14 @@ Shader "Mochizuki/Sakura Shader/Particles"
 
         ENDCG
 
+
         Pass
         {
-            Name   "Particles"
-
+            Name   "Lyrics Outline 1"
+            
             Blend  SrcAlpha OneMinusSrcAlpha
-            Cull   [_Culling]
-            ZWrite [_ZWrite]
+            Cull   Front
+            ZWrite On
 
             Stencil
             {
@@ -73,8 +59,8 @@ Shader "Mochizuki/Sakura Shader/Particles"
 
             CGPROGRAM
 
-            #define SHADER_PARTICLES
-            #define SHADER_CUSTOM_VERTEX
+            #define SHADER_STENCIL_WRITE
+            #define SHADER_OUTLINE
 
             #include "includes/core.cginc"
 
@@ -82,5 +68,5 @@ Shader "Mochizuki/Sakura Shader/Particles"
         }
     }
 
-    CustomEditor "Mochizuki.SakuraShader.ParticlesGui"
+    CustomEditor "Mochizuki.SakuraShader.StencilWriteGui"
 }

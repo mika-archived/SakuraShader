@@ -81,4 +81,8 @@ v2f vs(const appdata_full v)
 
 #include "skybox.cginc"
 
+#elif defined(SHADER_STENCIL_WRITE)
+
+#include "stencil-write.cginc"
+
 #endif

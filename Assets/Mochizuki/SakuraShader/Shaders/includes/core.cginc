@@ -15,6 +15,7 @@ float4    _MainTex_ST;
 struct appdata
 {
     float4 vertex   : POSITION;
+    float3 normal   : NORMAL;
     float2 texcoord : TEXCOORD0;
 
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -29,8 +30,10 @@ struct appdata
 struct v2f
 {
     float4 vertex   : SV_POSITION;
+    float3 normal   : NORMAL;
     float2 texCoord : TEXCOORD0;
-    float3 localPos : TEXCOORD1;
+    float3 worldPos : TEXCOORD1;
+    float3 localPos : TEXCOORD2;
 
 #if defined(SHADER_SINGLE_PASS_RENDERING)
     UNITY_VERTEX_OUTPUT_STEREO
@@ -51,7 +54,9 @@ v2f vs(const appdata_full v)
 #endif // SHADER_SINGLE_PASS_RENDERING
 
     o.vertex   = UnityObjectToClipPos(v.vertex);
+    o.normal   = UnityObjectToWorldNormal(v.normal);
     o.texCoord = TRANSFORM_TEX(v.texcoord, _MainTex);
+    o.worldPos = mul(unity_ObjectToWorld, v.vertex);
     o.localPos = v.vertex.xyz;
 
     return o;
@@ -84,5 +89,9 @@ v2f vs(const appdata_full v)
 #elif defined(SHADER_STENCIL_WRITE)
 
 #include "stencil-write.cginc"
+
+#elif defined(SHADER_AVATARS)
+
+#include "avatars.cginc"
 
 #endif

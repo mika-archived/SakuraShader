@@ -11,4 +11,31 @@ namespace Mochizuki.SakuraShader
 
         TexCoordW
     }
+
+    public enum ThinOutSource
+    {
+        MaskTexture,
+
+        NoiseTexture,
+
+        ShaderProperty
+    }
+
+    public enum VoxelSource
+    {
+        Vertex,
+
+        ShaderProperty
+    }
+
+    public enum UvSamplingSource
+    {
+        Center,
+
+        First,
+
+        Second,
+
+        Last
+    }
 }

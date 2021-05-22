@@ -8,6 +8,11 @@
 float4 _Color;
 float  _Alpha;
 
+int       _BlendMode;
+int       _EnableMeshClipping;
+int       _MeshClippingMode;
+float     _MeshClippingWidth;
+float     _MeshClippingOffset;
 int       _EnableTriangleHolograph;
 float     _TriangleHolographHeight;
 float     _TriangleHolographAlpha;
@@ -29,6 +34,10 @@ float     _ThinOutNoiseThresholdR;
 float     _ThinOutNoiseThresholdG;
 float     _ThinOutNoiseThresholdB;
 float     _ThinOutMinSize;
+int       _EnableWireframe;
+float4    _WireframeColor;
+float     _WireframeThickness;
+
 
 struct g2f
 {
@@ -40,6 +49,7 @@ struct g2f
     float2 uv       : TEXCOORD0;
     float3 worldPos : TEXCOORD1;
     float3 localPos : TEXCOORD2;
+    float3 bary     : TEXCOORD3;
 #endif // SHADER_AVATARS_SC
 };
 
@@ -125,12 +135,13 @@ inline g2f getStreamData1(float3 vertex, float3 normal, float2 uv, float3 oNorma
     const float3 pos2 = pos1 - normal * unity_LightShadowBias.z * sqrt(1 - cos * cos);
     o.pos = UnityApplyLinearShadowBias(UnityWorldToClipPos(float4(pos2, 1)));
 #else
-    o.pos      = UnityWorldToClipPos(getMovedVertex1(vertex, oNormal));
+    const float3 moved = getMovedVertex1(vertex, oNormal);
+
+    o.pos      = UnityWorldToClipPos(moved);
     o.normal   = normal;
     o.uv       = uv;
-    o.worldPos = mul(unity_ObjectToWorld, getMovedVertex1(vertex, oNormal));
-
-    UNITY_TRANSFER_FOG(o, o.pos);
+    o.worldPos = moved;
+    o.localPos = mul(unity_WorldToObject, float4(moved, 1.0));
 
 #endif // SHADER_AVATARS_SC
 
@@ -147,8 +158,45 @@ inline g2f getStreamData2(float3 vertex, float3 normal, float2 uv, float3 localP
     o.pos      = UnityWorldToClipPos(moved);
     o.normal   = normal;
     o.uv       = uv;
-    o.worldPos = mul(unity_ObjectToWorld, moved);
+    o.worldPos = moved;
+    o.localPos = mul(unity_WorldToObject, moved);
 #endif // SHADER_AVATARS_TH
+
+    return o;
+}
+
+inline g2f getStreamData3(float3 vertex, float3 normal, float2 uv, float3 localPos)
+{
+    g2f o = (g2f) 0;
+
+#if defined(SHADER_AVATARS_SC)
+    const float  cos = dot(normal, normalize(UnityWorldSpaceLightDir(vertex)));
+    const float3 pos = vertex - normal * unity_LightShadowBias.z * sqrt(1 - cos * cos);
+    o.pos = UnityApplyLinearShadowBias(UnityWorldToClipPos(float4(pos, 1)));
+#else
+    o.pos      = UnityWorldToClipPos(vertex);
+    o.normal   = normal;
+    o.uv       = uv;
+    o.worldPos = vertex;
+    o.localPos = mul(unity_WorldToObject, vertex);
+#endif
+
+    return o;
+}
+
+inline g2f getStreamData4(float3 vertex, float3 normal, float3 bary)
+{
+    g2f o = (g2f) 0;
+
+#if defined(SHADER_AVATARS_WF)
+
+    o.pos      = UnityWorldToClipPos(vertex);
+    o.normal   = normal;
+    o.worldPos = vertex;
+    o.localPos = mul(unity_WorldToObject, vertex);
+    o.bary     = bary;
+
+#endif // SHADER_AVATARS_WF
 
     return o;
 }
@@ -166,7 +214,7 @@ void gs(const triangle v2f i[3], const uint id : SV_PRIMITIVEID, inout TriangleS
             const float2 uv     = getVertexUVFromIndex(i, j);
             const float3 normal = i[j].normal;
 
-            stream.Append(getStreamData1(vertex, normal, uv, normal));
+            stream.Append(getStreamData3(vertex, normal, uv, i[j].localPos));
         }
 
         return;
@@ -334,16 +382,6 @@ void gs(const triangle v2f i[3], const uint id : SV_PRIMITIVEID, inout TriangleS
 #elif defined(SHADER_AVATARS_TH)
     if (_EnableTriangleHolograph == 0)
     {
-        [unroll]
-        for (int j = 0; j < 3; j++)
-        {
-            const float3 vertex = getVertexPosFromIndex(i, j);
-            const float2 uv     = getVertexUVFromIndex(i, j);
-            const float3 normal = i[j].normal;
-
-            stream.Append(getStreamData1(vertex, normal, uv, normal));
-        }
-
         return;
     }
 
@@ -362,6 +400,21 @@ void gs(const triangle v2f i[3], const uint id : SV_PRIMITIVEID, inout TriangleS
 
     return;
 
+#elif defined(SHADER_AVATARS_WF)
+    if (_EnableWireframe == 0)
+    {
+        return;
+    }
+
+    const v2f vert1 = i[0];
+    const v2f vert2 = i[1];
+    const v2f vert3 = i[2];
+
+    stream.Append(getStreamData4(vert1.worldPos.xyz, vert1.normal, float3(1, 0, 0)));
+    stream.Append(getStreamData4(vert2.worldPos.xyz, vert2.normal, float3(0, 1, 0)));
+    stream.Append(getStreamData4(vert3.worldPos.xyz, vert3.normal, float3(0, 0, 1)));
+    stream.RestartStrip();
+
 #endif // SHADER_AVATARS_VG
 
 }
@@ -370,9 +423,71 @@ float4 fs(g2f i) : SV_TARGET
 {
 #if defined(SHADER_AVATARS_SC)
     SHADOW_CASTER_FRAGMENT(i)
-#elif defined(SHADER_AVATARS_TH)
+#elif defined(SHADER_AVATARS_WF)
+
+    const float3 deltas = fwidth(i.bary) * 1 * _WireframeThickness;
+    const float3 baries = smoothstep(deltas, 2 * deltas, i.bary);
+    const float  bary   = min(baries.x, min(baries.y, baries.z));
+
+    clip(bary > 0.5 ? -1 : 0);
+
+    if (_EnableMeshClipping)
+    {
+        if (_MeshClippingMode == 0)
+        {
+            clip(lerp(1, -1, step(i.localPos.x + _MeshClippingOffset - _MeshClippingWidth, 0)));
+        }
+        else if (_MeshClippingMode == 1)
+        {
+            clip(lerp(1, -1, step(abs(i.localPos.x) - _MeshClippingWidth * 0.5, 0)));
+        }
+        else if (_MeshClippingMode == 2)
+        {
+            clip((i.localPos.x - _MeshClippingOffset + _MeshClippingWidth) * -1);
+        }
+        else if (_MeshClippingMode == 3)
+        {
+            clip((i.localPos.y - _MeshClippingOffset + _MeshClippingWidth) * -1);
+        }
+        else if (_MeshClippingMode == 4)
+        {
+            clip(lerp(1, -1, step(i.localPos.y + _MeshClippingOffset - _MeshClippingWidth, 0)));
+        }
+    }
+
+
+    return _WireframeColor;
+
+#else
+
+    if (_EnableMeshClipping)
+    {
+        if (_MeshClippingMode == 0)
+        {
+            clip(lerp(-1, 1, step(i.localPos.x + _MeshClippingOffset - _MeshClippingWidth, 0)));
+        }
+        else if (_MeshClippingMode == 1)
+        {
+            clip(lerp(-1, 1, step(abs(i.localPos.x) - _MeshClippingWidth * 0.5, 0)));
+        }
+        else if (_MeshClippingMode == 2)
+        {
+            clip(i.localPos.x - _MeshClippingOffset + _MeshClippingWidth);
+        }
+        else if (_MeshClippingMode == 3)
+        {
+            clip(i.localPos.y - _MeshClippingOffset + _MeshClippingWidth);
+        }
+        else if (_MeshClippingMode == 4)
+        {
+            clip(lerp(-1, 1, step(i.localPos.y + _MeshClippingOffset - _MeshClippingWidth, 0)));
+        }
+    }
+
+#if defined(SHADER_AVATARS_TH)
     return float4(tex2D(_MainTex, i.uv).rgb, _TriangleHolographAlpha);
 #else
-    return float4(tex2D(_MainTex, i.uv).rgb, _Alpha);
+    return float4(tex2D(_MainTex, i.uv).rgb, _BlendMode == 0 ? 1 : _Alpha);
+#endif // SHADER_AVATARS_SH
 #endif // SHADER_AVATARS_SC
 }

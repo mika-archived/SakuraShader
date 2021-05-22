@@ -5,6 +5,28 @@
 
 namespace Mochizuki.SakuraShader
 {
+    public enum ClippingMode
+    {
+        Left,
+
+        Center,
+
+        Right,
+
+        Top,
+
+        Bottom
+    }
+
+    public enum BlendMode
+    {
+        Opaque,
+
+        // Cutout,
+
+        Transparent
+    }
+
     public enum IndexSource
     {
         TexCoordZ,

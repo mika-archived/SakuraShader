@@ -11,6 +11,17 @@ Shader "Mochizuki/Sakura Shader/Avatars"
         _Color                   ("Main Color",                 Color) = (0, 0, 0, 1)
         _Alpha                   ("Alpha Transparent",    Range(0, 1)) = 1
 
+        // #region Mesh Clipping
+
+        [SSToggleWithoutKeyword]
+        _EnableMeshClipping      ("Enable Mesh Clipping",         Int) = 0
+        [Enum(Mochizuki.SakuraShader.ClippingMode)]
+        _MeshClippingMode        ("Mesh Clipping Mode",           Int) = 0
+        _MeshClippingWidth       ("Mesh Clipping Width",  Range(0, 1)) = 1
+        _MeshClippingOffset      ("Mesh Clipping Offset", Range(0, 1)) = 0
+
+        // #endregion
+
         // #region TriangleHolograph
 
         [SSToggleWithoutKeyword]
@@ -32,6 +43,7 @@ Shader "Mochizuki/Sakura Shader/Avatars"
         _VoxelOffsetX            ("Voxel Offset X",             Float) = 0
         _VoxelOffsetY            ("Voxel Offset Y",             Float) = 0
         _VoxelOffsetZ            ("Voxel Offset X",             Float) = 0
+        [SSToggleWithoutKeyword]
         _VoxelAnimation          ("Enable Voxel Animation",       Int) = 1
         [Enum(Mochizuki.SakuraShader.UvSamplingSource)]
         _VoxelUVSamplingSource   ("UV Sampling Source",           Int) = 0
@@ -55,24 +67,40 @@ Shader "Mochizuki/Sakura Shader/Avatars"
 
         // #endregion
 
+        // #region Wireframe
+
+        [SSToggleWithoutKeyword]
+        _EnableWireframe        ("Enable Wireframe",            Int) = 0
+        _WireframeColor         ("Wireframe Color",           Color) = (0, 0, 0, 1)
+        _WireframeThickness     ("Wireframe Thickness", Range(0, 1)) = 0.125
+        // #endregion
+
         // #region Stencil
 
-        _StencilRef              ("Stencil Reference",               Int) = 1
+        _StencilRef              ("Stencil Reference",           Int) = 1
         [Enum(UnityEngine.Rendering.CompareFunction)]
-        _StencilCompare          ("Stencil Compare",                 Int) = 8
+        _StencilCompare          ("Stencil Compare",             Int) = 8
         [Enum(UnityEngine.Rendering.StencilOp)]
-        _StencilPass             ("Stencil Pass",                    Int) = 0
+        _StencilPass             ("Stencil Pass",                Int) = 0
+
+        // #endregion
+
+        // #region Metadata
+        [Enum(Mochizuki.SakuraShader.BlendMode)]
+        _BlendMode               ("Blend Mode",                  Int) = 0
 
         // #endregion
 
         [Enum(UnityEngine.Rendering.BlendMode)]
-        _BlendSrcFactor          ("Blend Src Factor",                Int) = 5
+        [HideInInspector]
+        _BlendSrcFactor          ("Blend Src Factor",            Int) = 5
         [Enum(UnityEngine.Rendering.BlendMode)]
-        _BlendDestFactor         ("Blend Dest Factor",               Int) = 10
+        [HideInInspector]
+        _BlendDestFactor         ("Blend Dest Factor",           Int) = 10
         [Enum(UnityEngine.Rendering.CullMode)]
-        _Culling                 ("Culling",                         Int) = 2
+        _Culling                 ("Culling",                     Int) = 2
         [Enum(Off, 0, On, 1)]
-        _ZWrite                  ("ZWrite",                          Int) = 1
+        _ZWrite                  ("ZWrite",                      Int) = 1
     }
 
     SubShader
@@ -82,8 +110,9 @@ Shader "Mochizuki/Sakura Shader/Avatars"
         Tags
         {
             "Queue" = "Geometry"
-            "RenderType" = "Transparent"
+            "RenderType" = "Opaque"
             "IgnoreProjector" = "False"
+            "DisableBatching" = "True"
         }
 
         CGINCLUDE
@@ -102,7 +131,7 @@ Shader "Mochizuki/Sakura Shader/Avatars"
         {
             Name "Avatars Voxel Geometry"
 
-            // Blend  [_BlendSrcFactor] [_BlendDestFactor]
+            Blend  [_BlendSrcFactor] [_BlendDestFactor]
             Cull   [_Culling]
             ZWrite [_ZWrite]
 
@@ -120,6 +149,31 @@ Shader "Mochizuki/Sakura Shader/Avatars"
             #include "includes/core.cginc"
 
             ENDCG
+        }
+
+        Pass
+        {
+            Name "Avatars Wireframe"
+
+            Blend  SrcAlpha OneMinusSrcAlpha
+            Cull   Off
+            ZWrite [_ZWrite]
+
+            Stencil
+            {
+                Ref  [_StencilRef]
+                Comp [_StencilCompare]
+                Pass [_StencilPass]
+            }
+
+            CGPROGRAM
+
+            #define SHADER_AVATARS_WF
+
+            #include "includes/core.cginc"
+
+            ENDCG
+
         }
 
         Pass
